@@ -19,6 +19,7 @@ import Tables from '../../views/Components/Tables/'
 import Tabs from '../../views/Components/Tabs/'
 import FontAwesome from '../../views/Icons/FontAwesome/'
 import SimpleLineIcons from '../../views/Icons/SimpleLineIcons/'
+import Datasource from '../../views/Datasource/'
 
 class Full extends Component {
   render() {
@@ -44,6 +45,7 @@ class Full extends Component {
                 <Route path="/icons/simple-line-icons" name="Simple Line Icons" component={SimpleLineIcons}/>
                 <Route path="/widgets" name="Widgets" component={Widgets}/>
                 <Route path="/charts" name="Charts" component={Charts}/>
+                <Route path="/datasource" name="datasource" component={Datasource}/>
                 <Redirect from="/" to="/dashboard"/>
               </Switch>
             </div>
