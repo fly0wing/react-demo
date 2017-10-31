@@ -1,0 +1,6 @@
+{
+  "name": "ListDb",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./ListDb.js"
+}
