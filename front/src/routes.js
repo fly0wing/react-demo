@@ -15,8 +15,9 @@ const routes = {
   '/icons/font-awesome': 'Font Awesome',
   '/icons/simple-line-icons': 'Simple Line Icons',
   '/widgets': 'Widgets',
+  '/datasource': 'Datasource',
+  '/datasource/add': 'Datasource Add',
   '/datasource/list': 'Datasource List',
-  '/datasource/edit': 'Datasource Edit',
-  '/datasource': 'Datasource'
+  '/datasource/:id': 'Datasource Edit',
 };
 export default routes;

@@ -19,10 +19,10 @@ import Tables from "../../views/Components/Tables/";
 import Tabs from "../../views/Components/Tabs/";
 import FontAwesome from "../../views/Icons/FontAwesome/";
 import SimpleLineIcons from "../../views/Icons/SimpleLineIcons/";
-import Datasource from "../../views/Datasource/";
 import EditDb from "../../views/Datasource/Edit/EditDb";
 import ListDb from "../../views/Datasource/List/ListDb";
 import {createBrowserHistory} from "history";
+import AddDb from "../../views/Datasource/Add/AddDb";
 
 const history = createBrowserHistory();
 class Full extends Component {
@@ -52,9 +52,10 @@ class Full extends Component {
                                 <Route path="/widgets" name="Widgets" component={Widgets}/>
                                 <Route path="/charts" name="Charts" component={Charts}/>
                                 <Route path="/datasource/list" name="datasource-list" component={ListDb}/>
+                                <Route path="/datasource/add" name="datasource-add" component={AddDb}/>
                                 <Route path="/datasource/:id" name="datasource-edit" component={EditDb}/>
-                                <Route path="/datasource" name="datasource" component={Datasource}>
-                                </Route>
+                                <Redirect from="/datasource" to="/datasource/list"/>
+
                                 <Redirect from="/" to="/dashboard"/>
                             </Switch>
                         </div>

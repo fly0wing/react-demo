@@ -118,7 +118,7 @@ class ListDb extends Component {
             });
         }
         return (   <div className="animated fadeIn">
-                <div className="card-columns cols-2">
+                <div className="col-md-12">
                     <div className="card">
                         <div className="card-header">
                             <i className="fa fa-align-justify"></i> 数据库列表
@@ -128,6 +128,8 @@ class ListDb extends Component {
                                     className="btn btn-sm btn-primary">
                                 <i className="fa fa-dot-circle-o"></i> 刷新
                             </button>
+                            <Link className="btn btn-sm btn-success" to={"/datasource/add"}>
+                                <i className="fa fa-dot-circle-o"></i> 新增</Link>
                         </div>
                         <div className="card-block">
                             <table className="table table-striped">
