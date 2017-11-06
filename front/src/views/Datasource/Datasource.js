@@ -1,5 +1,7 @@
 import React, {Component} from "react";
 import "whatwg-fetch";
+import ListDb from "./List/ListDb";
+import EditDb from "./Edit/EditDb";
 
 
 class Datasource extends Component {
@@ -27,6 +29,7 @@ class Datasource extends Component {
         this.loadData = this.loadData.bind(this);
         this.updateShow = this.updateShow.bind(this);
         this.onTextChange = this.onTextChange.bind(this);
+        this.onlick1 = this.onlick1.bind(this);
 
         this.state = {
             password: null,
@@ -191,6 +194,15 @@ class Datasource extends Component {
         return urls;
     }
 
+    onlick1(id,e){
+        e.preventDefault();
+        this.setState({
+            editId: id
+        });
+
+        console.log(id);
+    }
+
     render() {
         let self = this;
         let resultJson = this.state.resultJson;
@@ -225,190 +237,19 @@ class Datasource extends Component {
         let tablesStr = this.showTables(updateJson.tables);
         let dbsStr = this.showDbs2(updateJson.dbDataMediaSources);
 
-
+        // var editTab;
+        // if(self.isNotNull(self.state.editId)){
+        // editTab = ;
+        // }
         return (
             <div className="animated fadeIn">
                 <div className="card-columns cols-2">
-                    <div className="card">
-                        <div className="card-header">
-                            <strong>Horizontal</strong> Form
-                        </div>
-                        <div className="card-block">
-                            <form id="form-horizontal" action="" method="post" className="form-horizontal">
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-id">id</label>
-                                    <div className="col-md-9">
-                                        <input disabled={true} type="text" id="db-id" name="db-id"
-                                               className="form-control"
-                                               value={updateJson.id}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-name">name</label>
-                                    <div className="col-md-9">
-                                        <input disabled={true} type="text" id="db-name" name="db-name"
-                                               className="form-control"
-                                               value={updateJson.name}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-type">type</label>
-                                    <div className="col-md-9">
-                                        <select id="db-type" name="db-type" className="form-control"
-                                                value={updateJson.type} onChange={this.onTextChange}>
-                                            <option value="none">Please select</option>
-                                            <option value="MYSQL">单库单表</option>
-                                            <option value="ELASTICSEARCH">ELASTICSEARCH</option>
-                                            <option value="DB_SHARDING">分库分表</option>
-                                            <option value="CDS">CDS</option>
-                                        </select>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-encode">encode</label>
-                                    <div className="col-md-9">
-                                        <select id="db-encode" name="db-encode" className="form-control"
-                                                value={updateJson.encode} onChange={this.onTextChange}>
-                                            <option value="none">Please select</option>
-                                            <option value="utf8">utf-8</option>
-                                        </select>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-url">url</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-url" name="db-url"
-                                               value={updateJson.url} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label"
-                                           htmlFor="db-username">username</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-username" name="db-username"
-                                               value={updateJson.username} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label"
-                                           htmlFor="db-password">password</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-password" name="db-password"
-                                               value={updateJson.password} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-driver">driver</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-driver" name="db-driver"
-                                               value={updateJson.driver} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label"
-                                           htmlFor="db-properties">properties</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-properties"
-                                               name="db-properties"
-                                               value={updateJson.properties} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-tables">tables</label>
-                                    <div className="col-md-9">
-                                        <textarea disabled={true} id="db-tables" name="db-tables" rows="9" className="form-control"
-                                                  placeholder="Content.."
-                                                  value={tablesStr} onChange={this.onTextChange}></textarea>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-dbDataMediaSources">dbDataMediaSources</label>
-                                    <div className="col-md-9">
-                                        <textarea contentEditable={false} id="db-dbDataMediaSources" name="db-dbDataMediaSources" rows="9"
-                                                  className="form-control"
-                                                  placeholder="Content.."
-                                                  value={dbsStr} onChange={this.onTextChange}></textarea>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label"
-                                           htmlFor="db-createTime">createTime</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-createTime"
-                                               name="db-createTime"
-                                               value={updateJson.createTime} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-
-                                <div className="form-group row">
-                                    <label className="col-md-3 form-control-label" htmlFor="db-modifiedTime">modifiedTime</label>
-                                    <div className="col-md-9">
-                                        <input type="text" className="form-control" id="db-modifiedTime"
-                                               name="db-modifiedTime"
-                                               value={updateJson.modifiedTime} onChange={this.onTextChange}/>
-                                        <span className="help-block"></span>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div className="card-footer">
-                            <button type="submit" onClick={this.commitDb} className="btn btn-sm btn-primary"><i
-                                className="fa fa-dot-circle-o"></i> Submit
-                            </button>
-                            <button type="reset" onClick={this.loadData} className="btn btn-sm btn-danger"><i
-                                className="fa fa-ban"></i> Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header">
-                            <i className="fa fa-align-justify"></i> Striped Table
-                        </div>
-                        <div className="card-block">
-                            <table className="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th>id</th>
-                                    <th>name</th>
-                                    <th>type</th>
-                                    <th>url</th>
-                                    <th>Status</th>
-                                    <th>操作</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {res}
-                                </tbody>
-                            </table>
-                            <ul className="pagination">
-                                <li className="page-item"><a className="page-link" href="#">Prev</a></li>
-                                <li className="page-item active">
-                                    <a className="page-link" href="#">1</a>
-                                </li>
-                                <li className="page-item"><a className="page-link" href="#">2</a></li>
-                                <li className="page-item"><a className="page-link" href="#">3</a></li>
-                                <li className="page-item"><a className="page-link" href="#">4</a></li>
-                                <li className="page-item"><a className="page-link" href="#">Next</a></li>
-                            </ul>
-                        </div>
-                    </div>
+                    {this.props.children}
+                    {/*<ListDb onclick1={self.onlick1}/>*/}
+                    {/*<EditDb editId={self.isNotNull(self.state.editId) ? self.state.editId : -1}/>*/}
                 </div>
             </div>
-        )
+        );
     }
 }
 

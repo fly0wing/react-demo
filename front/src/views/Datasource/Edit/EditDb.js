@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import "whatwg-fetch";
+import moment from "moment";
 
 
 class EditDb extends Component {
@@ -22,11 +23,12 @@ class EditDb extends Component {
     };
 
     constructor(props) {
+        console.log("edit db ");
         super(props);
-        this.commitDb = this.commitDb.bind(this);
-        this.loadData = this.loadData.bind(this);
         this.updateShow = this.updateShow.bind(this);
         this.onTextChange = this.onTextChange.bind(this);
+        this.backward = this.backward.bind(this);
+        this.commit = this.commit.bind(this);
 
         this.state = {
             password: null,
@@ -34,58 +36,6 @@ class EditDb extends Component {
             resultJson: null,
             updateJson: this.defaultUpdateJson
         };
-    }
-
-    commitDb(e) {
-        e.preventDefault();
-        var form = document.querySelector('#form-horizontal');
-        var formdata = new FormData(form);
-        var email = formdata.get("hf-email");
-        var password = formdata.get("hf-password");
-        this.setState({
-            password: password,
-            email: email,
-        });
-
-
-        fetch('http://127.0.0.1:8888/a', {
-            // credentials: 'include',
-            method: 'POST',
-            // @see https://segmentfault.com/a/1190000009637016
-            // headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', },
-            body: JSON.stringify({
-                "email": email,
-                "password": password
-            })
-        });
-
-    }
-
-    loadData(e) {
-        e.preventDefault();
-        let self = this;
-
-        fetch('http://127.0.0.1:9150/datasource/', {
-            // credentials: 'include',
-            method: 'GET',
-            // @see https://segmentfault.com/a/1190000009637016
-            headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}
-
-        }).then(
-            function (res) {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    console.warn(res);
-                }
-            }
-        ).then(function (json) {
-                self.setState({
-                    resultJson: json
-                });
-            }
-        )
-        ;
     }
 
     onTextChange(e) {
@@ -108,11 +58,32 @@ class EditDb extends Component {
         );
     }
 
-    updateShow(id, e) {
-        e.preventDefault();
+    commit() {
+
+        let params = this.props.match.params;
+        let id = params.id;
+        fetch('http://127.0.0.1:9150/datasource/' + id, {
+            // credentials: 'include',
+            method: 'PUT',
+            // @see https://segmentfault.com/a/1190000009637016
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+            body: JSON.stringify(this.state.updateJson)
+        }).then(
+            function (res) {
+                if (res.ok) {
+                    console.warn("update success");
+                } else {
+                    console.warn(res);
+                }
+            }
+        )
+        ;
+    }
+
+    updateShow(e) {
         let self = this;
-        console.info(e);
-        console.info(id);
+        let params = this.props.match.params;
+        let id = params.id;
 
         fetch('http://127.0.0.1:9150/datasource/' + id, {
             // credentials: 'include',
@@ -129,6 +100,7 @@ class EditDb extends Component {
                 }
             }
         ).then(function (json) {
+                console.info(json);
 
                 self.setState({
                     updateJson: self.defaultUpdateJson
@@ -191,188 +163,200 @@ class EditDb extends Component {
         return urls;
     }
 
-    render() {
-        let self = this;
-        let resultJson = this.state.resultJson;
-        let updateJson = this.state.updateJson;
-        var res = [];
-        if (this.isNotNull(resultJson)) {
-            resultJson.forEach(function (db) {
-                var urls = self.showDbs(db.dbDataMediaSources);
-                res.push(<tr key={db.id}>
-                    <td>{db.id}</td>
-                    <td>{db.name}</td>
-                    <td>{db.type}</td>
-                    <td style={{
-                        "wordWrap": "break-word",
-                        "tableLayout": "fixed",
-                        "wordBreak": "break-all"
-                    }}>{db.url}
-                        {urls}
-                    </td>
-                    <td>
-                        <span className="badge badge-success">Active</span>
-                    </td>
-                    <td>
-                        <button key={db.name} type="submit" onClick={(e) => self.updateShow(db.id, e)}
-                                className="btn btn-sm btn-primary"><i
-                            className="fa fa-dot-circle-o"></i> update
-                        </button>
-                    </td>
-                </tr>)
-            });
+    // componentWillReceiveProps(nextProps) {
+    //     debugger
+    //
+    //     if (nextProps.editId > 0) {
+    //         this.updateShow(nextProps.editId);
+    //     }
+    // }
+
+    componentWillMount() {
+        let params = this.props.match.params;
+        this.updateShow(params.id);
+        // console.log(params);
+    }
+
+    backward(e) {
+        if (e) {
+            e.preventDefault();
         }
+        this.props.history.goBack();
+    }
+
+    render() {
+        let params = this.props.match.params;
+        console.log(params);
+        if (this.isNull(params.id) || params.id < 0) {
+            return null;
+        }
+
+
+        let self = this;
+        let updateJson = this.state.updateJson;
+
         let tablesStr = this.showTables(updateJson.tables);
         let dbsStr = this.showDbs2(updateJson.dbDataMediaSources);
 
+        let modifiedTime = moment(updateJson.modifiedTime).format("YYYY-MM-DD HH:mm:ss.SSS");
+        let createTime = moment(updateJson.createTime).format("YYYY-MM-DD HH:mm:ss.SSS");
 
         return (
-            <div className="card">
-                <div className="card-header">
-                    <strong>Horizontal</strong> Form
-                </div>
-                <div className="card-block">
-                    <form id="form-horizontal" action="" method="post" className="form-horizontal">
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-id">id</label>
-                            <div className="col-md-9">
-                                <input disabled={true} type="text" id="db-id" name="db-id"
-                                       className="form-control"
-                                       value={updateJson.id}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-name">name</label>
-                            <div className="col-md-9">
-                                <input disabled={true} type="text" id="db-name" name="db-name"
-                                       className="form-control"
-                                       value={updateJson.name}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-type">type</label>
-                            <div className="col-md-9">
-                                <select id="db-type" name="db-type" className="form-control"
-                                        value={updateJson.type} onChange={this.onTextChange}>
-                                    <option value="none">Please select</option>
-                                    <option value="MYSQL">单库单表</option>
-                                    <option value="ELASTICSEARCH">ELASTICSEARCH</option>
-                                    <option value="DB_SHARDING">分库分表</option>
-                                    <option value="CDS">CDS</option>
-                                </select>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
 
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-encode">encode</label>
-                            <div className="col-md-9">
-                                <select id="db-encode" name="db-encode" className="form-control"
-                                        value={updateJson.encode} onChange={this.onTextChange}>
-                                    <option value="none">Please select</option>
-                                    <option value="utf8">utf-8</option>
-                                </select>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-url">url</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-url" name="db-url"
-                                       value={updateJson.url} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label"
-                                   htmlFor="db-username">username</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-username" name="db-username"
-                                       value={updateJson.username} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label"
-                                   htmlFor="db-password">password</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-password" name="db-password"
-                                       value={updateJson.password} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-driver">driver</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-driver" name="db-driver"
-                                       value={updateJson.driver} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
+            <div className="animated fadeIn">
 
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label"
-                                   htmlFor="db-properties">properties</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-properties"
-                                       name="db-properties"
-                                       value={updateJson.properties} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
+                <button type="reset" onClick={this.backward} className="btn btn-sm btn-success"><i
+                    className=" fa fa-chevron-left fa-lg "></i> 后退
+                </button>
+                <div className="card-columns cols-2">
+                    <div className="card">
+                        <div className="card-header">
+                            <strong>Horizontal</strong> Form
                         </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-tables">tables</label>
-                            <div className="col-md-9">
+                        <div className="card-block">
+                            <form id="form-horizontal" action="" method="post" className="form-horizontal">
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-id">id</label>
+                                    <div className="col-md-9">
+                                        <input disabled={true} type="text" id="db-id" name="db-id"
+                                               className="form-control"
+                                               value={updateJson.id}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-name">name</label>
+                                    <div className="col-md-9">
+                                        <input disabled={true} type="text" id="db-name" name="db-name"
+                                               className="form-control"
+                                               value={updateJson.name}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-type">type</label>
+                                    <div className="col-md-9">
+                                        <select id="db-type" name="db-type" className="form-control"
+                                                value={updateJson.type} onChange={this.onTextChange}>
+                                            <option value="none">Please select</option>
+                                            <option value="MYSQL">单库单表</option>
+                                            <option value="ELASTICSEARCH">ELASTICSEARCH</option>
+                                            <option value="DB_SHARDING">分库分表</option>
+                                            <option value="CDS">CDS</option>
+                                        </select>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-encode">encode</label>
+                                    <div className="col-md-9">
+                                        <select id="db-encode" name="db-encode" className="form-control"
+                                                value={updateJson.encode} onChange={this.onTextChange}>
+                                            <option value="none">Please select</option>
+                                            <option value="utf8">utf-8</option>
+                                        </select>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-url">url</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-url" name="db-url"
+                                               value={updateJson.url} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label"
+                                           htmlFor="db-username">username</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-username" name="db-username"
+                                               value={updateJson.username} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label"
+                                           htmlFor="db-password">password</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-password" name="db-password"
+                                               value={updateJson.password} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-driver">driver</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-driver" name="db-driver"
+                                               value={updateJson.driver} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label"
+                                           htmlFor="db-properties">properties</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-properties"
+                                               name="db-properties"
+                                               value={updateJson.properties} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-tables">tables</label>
+                                    <div className="col-md-9">
                                         <textarea disabled={true} id="db-tables" name="db-tables" rows="9"
                                                   className="form-control"
                                                   placeholder="Content.."
                                                   value={tablesStr} onChange={this.onTextChange}></textarea>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label" htmlFor="db-dbDataMediaSources">dbDataMediaSources</label>
-                            <div className="col-md-9">
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label" htmlFor="db-dbDataMediaSources">dbDataMediaSources</label>
+                                    <div className="col-md-9">
                                         <textarea contentEditable={false} id="db-dbDataMediaSources"
                                                   name="db-dbDataMediaSources" rows="9"
                                                   className="form-control"
                                                   placeholder="Content.."
                                                   value={dbsStr} onChange={this.onTextChange}></textarea>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label"
-                                   htmlFor="db-createTime">createTime</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-createTime"
-                                       name="db-createTime"
-                                       value={updateJson.createTime} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
-                        </div>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label"
+                                           htmlFor="db-createTime">createTime</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-createTime"
+                                               name="db-createTime"
+                                               value={createTime} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
 
-                        <div className="form-group row">
-                            <label className="col-md-3 form-control-label"
-                                   htmlFor="db-modifiedTime">modifiedTime</label>
-                            <div className="col-md-9">
-                                <input type="text" className="form-control" id="db-modifiedTime"
-                                       name="db-modifiedTime"
-                                       value={updateJson.modifiedTime} onChange={this.onTextChange}/>
-                                <span className="help-block"></span>
-                            </div>
+                                <div className="form-group row">
+                                    <label className="col-md-3 form-control-label"
+                                           htmlFor="db-modifiedTime">modifiedTime</label>
+                                    <div className="col-md-9">
+                                        <input type="text" className="form-control" id="db-modifiedTime"
+                                               name="db-modifiedTime"
+                                               value={modifiedTime} onChange={this.onTextChange}/>
+                                        <span className="help-block"></span>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                    </form>
-                </div>
-                <div className="card-footer">
-                    <button type="submit" onClick={this.commitDb} className="btn btn-sm btn-primary"><i
-                        className="fa fa-dot-circle-o"></i> Submit
-                    </button>
-                    <button type="reset" onClick={this.loadData} className="btn btn-sm btn-danger"><i
-                        className="fa fa-ban"></i> Reset
-                    </button>
+                        <div className="card-footer">
+                            <button type="submit" onClick={this.commit} className="btn btn-sm btn-primary"><i
+                                className="fa fa-dot-circle-o"></i> Submit
+                            </button>
+                            <button type="reset" onClick={this.updateShow} className="btn btn-sm btn-danger"><i
+                                className="fa fa-ban"></i> Reset
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
