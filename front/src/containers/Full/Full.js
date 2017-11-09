@@ -23,6 +23,9 @@ import EditDb from "../../views/Datasource/Edit/EditDb";
 import ListDb from "../../views/Datasource/List/ListDb";
 import {createBrowserHistory} from "history";
 import AddDb from "../../views/Datasource/Add/AddDb";
+import ListTask from "../../views/Task/List/ListTask";
+import AddTask from "../../views/Task/Add/AddTask";
+import EditTask from "../../views/Task/Edit/EditTask";
 
 const history = createBrowserHistory();
 class Full extends Component {
@@ -56,6 +59,10 @@ class Full extends Component {
                                 <Route path="/datasource/:id" name="datasource-edit" component={EditDb}/>
                                 <Redirect from="/datasource" to="/datasource/list"/>
 
+                                <Route path="/task/list" name="task-list" component={ListTask}/>
+                                <Route path="/task/add" name="task-add" component={AddTask}/>
+                                <Route path="/task/:id" name="task-edit" component={EditTask}/>
+                                <Redirect from="/task" to="/task/list"/>
                                 <Redirect from="/" to="/dashboard"/>
                             </Switch>
                         </div>

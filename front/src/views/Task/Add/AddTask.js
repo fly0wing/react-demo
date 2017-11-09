@@ -1,71 +1,61 @@
 import React, {Component} from "react";
-import CommonFormDb from "../common/CommonFormDb";
 import BackwardButton from "../../Components/common/BackwardButton";
-import {DATASOURCE_URL} from "../../../common/UrlCommon";
 import {CREATE} from "../../../common/FetchWrapper";
+import {TASK_URL} from "../../../common/UrlCommon";
+import CommonFormTask from "../common/CommonFormTask";
 
 
-class AddDb extends Component {
+class AddTask extends Component {
 
-    defaultUpdateJson = {
-        id: null,
-        name: null,
-        type: null,
-        encode: null,
-        createTime: null,
-        modifiedTime: null,
-        url: null,
-        username: null,
-        password: null,
-        driver: null,
-        properties: null
-    };
 
     constructor(props) {
+        console.log("edit db ");
         super(props);
         this.onTextChange = this.onTextChange.bind(this);
         this.commit = this.commit.bind(this);
 
         this.state = {
-            updateJson: this.defaultUpdateJson
+            updateJson: {}
         };
     }
 
-    onTextChange(name, val) {
-        const json = this.state.updateJson;
-        json[name] = val;
+    onTextChange(name, obj) {
+        let updateJson = this.state.updateJson;
+        updateJson[name] = obj;
         this.setState({
-            updateJson: json
+            updateJson: updateJson
         });
     }
 
     commit() {
+
         let self = this;
-        CREATE(DATASOURCE_URL,
+
+        CREATE(TASK_URL,
             this.state.updateJson,
-            (res) => self.props.history.goBack(),
-            (error) => alert(error.message.replace(";", "\n").replace(":", "\n"))
+            (res) => {
+                alert("update success");
+                self.props.history.goBack();
+            }
         )
         ;
     }
 
     render() {
         let self = this;
+        const updateJson = self.state.updateJson;
 
         return (
 
             <div className="animated fadeIn">
                 <div className="col-md-12">
                     <BackwardButton/>
-
                     <div className="card">
                         <div className="card-header">
                             <strong>Horizontal</strong> Form
                         </div>
-
-
                         <div className="card-block">
-                            <CommonFormDb updateJson={{}} onTextChange={self.onTextChange}/>
+                            <CommonFormTask updateJson={updateJson} onChange={self.onTextChange}/>
                         </div>
                         <div className="card-footer">
                             <button type="submit" onClick={self.commit} className="btn btn-sm btn-primary"><i
@@ -79,4 +69,4 @@ class AddDb extends Component {
     }
 }
 
-export default AddDb;
+export default AddTask;

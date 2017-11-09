@@ -1,26 +1,11 @@
 import React, {Component} from "react";
-import "whatwg-fetch";
 import Link from "react-router-dom/es/Link";
+import {DATASOURCE_URL} from "../../../common/UrlCommon";
+import {SELECT} from "../../../common/FetchWrapper";
+import {isNotNull, isNull} from "../../../common/Common";
 
 
 class ListDb extends Component {
-
-
-    defaultUpdateJson = {
-        id: "",
-        name: "",
-        type: "",
-        encode: "",
-        createTime: "",
-        modifiedTime: "",
-        url: "",
-        username: "",
-        password: "",
-        driver: "",
-        properties: "",
-        tables: "",
-        dbDataMediaSources: ""
-    };
 
     constructor(props) {
         super(props);
@@ -28,9 +13,9 @@ class ListDb extends Component {
 
         this.state = {
             resultJson: null,
-            updateJson: this.defaultUpdateJson
         };
     }
+
     componentWillMount() {
         this.loadData();
     }
@@ -41,82 +26,40 @@ class ListDb extends Component {
 
         let self = this;
 
-        fetch('http://127.0.0.1:9150/datasource/', {
-            // credentials: 'include',
-            method: 'GET',
-            // @see https://segmentfault.com/a/1190000009637016
-            headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}
-
-        }).then(
-            function (res) {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    console.warn(res);
-                }
-            }
-        ).then(function (json) {
+        SELECT(DATASOURCE_URL,
+            (json) => {
                 self.setState({
                     resultJson: json
                 });
-            }
-        )
+            })
         ;
     }
 
-    isNotNull(exp) {
-        return !this.isNull(exp);
-    }
-
-    isNull(exp) {
-        return (!exp && typeof(exp) != "undefined" && exp != 0) || typeof(exp) == "undefined";
-    }
-
     showDbs(dbObj) {
-        if (this.isNull(dbObj)) {
+        if (isNull(dbObj)) {
             return "";
         }
+        let dbs = [];
+        if (isNotNull(dbObj.url)) {
+            dbs.push(dbObj)
+        }
+        if (isNotNull(dbObj.dbDataMediaSources)) {
+            dbs = dbs.concat(Object.values(dbObj.dbDataMediaSources));
+        }
 
-        var urls = [];
-        let dbs = Object.values(dbObj);
+        const urls = [];
         dbs.forEach(db => {
             urls.push(db.url);
             urls.push(<br key={db.name}/>);
         });
-        urls.pop()
+        urls.pop();
         return urls;
     }
 
 
     render() {
         let self = this;
-        let resultJson = this.state.resultJson;
-        let updateJson = this.state.updateJson;
-        var res = [];
-        if (this.isNotNull(resultJson)) {
-            resultJson.forEach(function (db) {
-                var urls = self.showDbs(db.dbDataMediaSources);
-                res.push(<tr key={db.id}>
-                    <td>{db.id}</td>
-                    <td>{db.name}</td>
-                    <td>{db.type}</td>
-                    <td style={{
-                        "wordWrap": "break-word",
-                        "tableLayout": "fixed",
-                        "wordBreak": "break-all"
-                    }}>{db.url}
-                        {urls}
-                    </td>
-                    <td>
-                        <span className="badge badge-success">Active</span>
-                    </td>
-                    <td>
-                        <Link className="btn btn-sm btn-primary" to={"/datasource/" + db.id}>
-                            <i className="fa fa-dot-circle-o"></i>update</Link>
-                    </td>
-                </tr>)
-            });
-        }
+        let resultJson = this.state.resultJson || [];
         return (   <div className="animated fadeIn">
                 <div className="col-md-12">
                     <div className="card">
@@ -144,7 +87,27 @@ class ListDb extends Component {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {res}
+                                {resultJson.map(
+                                    (db) => <tr key={db.id}>
+                                        <td>{db.id}</td>
+                                        <td>{db.name}</td>
+                                        <td>{db.type}</td>
+                                        <td style={{
+                                            "wordWrap": "break-word",
+                                            "tableLayout": "fixed",
+                                            "wordBreak": "break-all"
+                                        }}>
+                                            {self.showDbs(db)}
+                                        </td>
+                                        <td>
+                                            <span className="badge badge-success">Active</span>
+                                        </td>
+                                        <td>
+                                            <Link className="btn btn-sm btn-primary" to={"/datasource/" + db.id}>
+                                                <i className="fa fa-dot-circle-o"></i>update</Link>
+                                        </td>
+                                    </tr>
+                                )}
                                 </tbody>
                             </table>
                             <ul className="pagination">

@@ -1,31 +1,15 @@
 import React, {Component} from "react";
 import BackwardButton from "../../Components/common/BackwardButton";
-import CommonFormDb from "../common/CommonFormDb";
-import createBrowserHistory from "history/es/createBrowserHistory";
-import {isNull} from "../../../common/Common";
+import CommonFormTask from "../common/CommonFormTask";
 import {SELECT, UPDATE} from "../../../common/FetchWrapper";
-import {getSingleDBUrl} from "../../../common/UrlCommon";
-
-const history = createBrowserHistory();
-
-class EditDb extends Component {
+import {isNull} from "../../../common/Common";
+import {getSingleTaskUrl} from "../../../common/UrlCommon";
 
 
-    defaultUpdateJson = {
-        id: "",
-        name: "",
-        type: "",
-        encode: "",
-        createTime: "",
-        modifiedTime: "",
-        url: "",
-        username: "",
-        password: "",
-        driver: "",
-        properties: "",
-        tables: "",
-        dbDataMediaSources: ""
-    };
+class EditTask extends Component {
+
+
+    defaultUpdateJson = null;
 
     constructor(props) {
         super(props);
@@ -34,41 +18,43 @@ class EditDb extends Component {
         this.commit = this.commit.bind(this);
 
         this.state = {
-            resultJson: null,
             updateJson: this.defaultUpdateJson
         };
     }
 
-
-    onTextChange(name, val) {
-        const json = this.state.updateJson;
-        json[name] = val;
+    onTextChange(name, obj) {
+        let updateJson = this.state.updateJson;
+        updateJson[name] = obj;
         this.setState({
-            updateJson: json
+            updateJson: updateJson
         });
     }
 
     commit() {
+        let self = this;
+
         let params = this.props.match.params;
         let id = params.id;
-        UPDATE(getSingleDBUrl(id),
+        UPDATE(getSingleTaskUrl(id),
             this.state.updateJson,
             (res) => {
-                alert("update success");
-                history.goBack();
-            }
-        )
+                if (res.ok) {
+                    alert("update success");
+                    self.props.history.goBack();
+                } else {
+                    console.warn(res);
+                }
+            })
         ;
     }
 
-    updateShow(e) {
+    updateShow() {
         let self = this;
         let params = this.props.match.params;
         let id = params.id;
 
-        SELECT(getSingleDBUrl(id),
+        SELECT(getSingleTaskUrl(id),
             (json) => {
-                console.info(json);
                 self.setState({
                     updateJson: self.defaultUpdateJson
                 });
@@ -84,6 +70,7 @@ class EditDb extends Component {
         this.updateShow(params.id);
     }
 
+
     render() {
         let params = this.props.match.params;
         if (isNull(params.id) || params.id < 0) {
@@ -94,6 +81,7 @@ class EditDb extends Component {
         let updateJson = this.state.updateJson;
 
         return (
+
             <div className="animated fadeIn">
                 <div className="col-md-12">
                     <BackwardButton/>
@@ -102,7 +90,7 @@ class EditDb extends Component {
                             <strong>Horizontal</strong> Form
                         </div>
                         <div className="card-block">
-                            <CommonFormDb updateJson={updateJson} onTextChange={self.onTextChange}/>
+                            <CommonFormTask updateJson={updateJson} onChange={self.onTextChange}/>
                         </div>
                         <div className="card-footer">
                             <button type="submit" onClick={self.commit} className="btn btn-sm btn-primary"><i
@@ -119,4 +107,4 @@ class EditDb extends Component {
     }
 }
 
-export default EditDb;
+export default EditTask;
