@@ -5,4 +5,5 @@ export const TASK_PROCESSED_URL = BASE_URL + "/processed/";
 
 export const getSingleDBUrl = (id) => DATASOURCE_URL + id;
 export const getSingleTaskUrl = (id) => TASK_URL + id;
+export const getSingleProcessedUrl = (id) => TASK_PROCESSED_URL + id;
 export const getStartTaskUrl = (id) => TASK_URL +"start/"+ id;

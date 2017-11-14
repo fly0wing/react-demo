@@ -152,7 +152,7 @@ class TaskItem extends Component {
                 <td>{dateFormat(processed.createTime)}</td>
                 <td>{processed.finishTime ? dateFormat(processed.finishTime) : "未开始"}</td>
                 <td>
-                    <Link className="btn btn-sm btn-outline-primary" to={"/show/" + processed.id}>
+                    <Link className="btn btn-sm btn-outline-primary" to={"/processed/show/" + processed.id}>
                         <i className="fa icon-pencil"></i>show</Link>
                 </td>
             </tr>
