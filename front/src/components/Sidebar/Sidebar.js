@@ -79,6 +79,9 @@ class Sidebar extends Component {
             <li className="nav-item">
               <NavLink to={'/task/list'} className="nav-link" activeClassName="active"><i className="icon-pie-chart"></i> Task</NavLink>
             </li>
+            <li className="nav-item">
+              <NavLink to={'/processed/list'} className="nav-link" activeClassName="active"><i className="icon-pie-chart"></i> Processed</NavLink>
+            </li>
             <li className="divider"></li>
             <li className="nav-title">
               Extras

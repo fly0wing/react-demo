@@ -1,8 +1,8 @@
 import React, {Component} from "react";
 import Link from "react-router-dom/es/Link";
 import {dateFormat} from "../../../common/Common";
-import {CREATE, SELECT} from "../../../common/FetchWrapper";
-import {getSingleDBUrl, getStartTaskUrl, TASK_URL} from "../../../common/UrlCommon";
+import {SELECT} from "../../../common/FetchWrapper";
+import {getSingleTaskUrl, TASK_PROCESSED_URL} from "../../../common/UrlCommon";
 import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from "reactstrap";
 
 
@@ -12,10 +12,9 @@ class ListTask extends Component {
         super(props);
         this.loadData = this.loadData.bind(this);
         this.toggleInfo = this.toggleInfo.bind(this);
-        this.onStart = this.onStart.bind(this);
 
         this.state = {
-            resultJson: null
+            resultJson: []
         };
     }
 
@@ -29,7 +28,7 @@ class ListTask extends Component {
 
         let self = this;
 
-        SELECT(TASK_URL,
+        SELECT(TASK_PROCESSED_URL,
             (json) => {
                 self.setState({
                     resultJson: json
@@ -37,41 +36,6 @@ class ListTask extends Component {
             }
         )
         ;
-    }
-
-    showDbs(dbObj) {
-        if (this.isNull(dbObj)) {
-            return "";
-        }
-
-        var urls = [];
-        let tasks = Object.values(dbObj);
-        tasks.forEach(task => {
-            urls.push(task.url);
-            urls.push(<br key={task.name}/>);
-        });
-        urls.pop();
-        return urls;
-    }
-
-    onStart(id) {
-        const self = this;
-        CREATE(getStartTaskUrl(id)
-            , {},
-            (succ) => {
-                self.setState({
-                    msg: "执行成功"
-                });
-                self.toggleInfo();
-            },
-            (error) => {
-                self.setState({
-                    msg: error.msg
-                });
-                self.toggleInfo();
-            }
-        );
-
     }
 
     toggleInfo() {
@@ -94,26 +58,22 @@ class ListTask extends Component {
                                     className="btn btn-sm btn-primary">
                                 <i className="fa icon-reload"></i> 刷新
                             </button>
-                            <Link className="btn btn-sm btn-success" to={"/task/add"}>
-                                <i className="fa fa-dot-circle-o"></i> 新增</Link>
                         </div>
                         <div className="card-block">
                             <table className="table table-striped">
                                 <thead>
                                 <tr>
                                     <th>id</th>
-                                    <th>name</th>
-                                    <th>左侧数据库</th>
-                                    <th>对账类型</th>
-                                    <th>左侧数据库</th>
+                                    <th>任务ID</th>
+                                    <th>状态</th>
                                     <th>创建时间</th>
-                                    <th>更新时间</th>
+                                    <th>执行时间</th>
                                     <th>操作</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {resultJson.map(
-                                    (task) => <TaskItem key={task.id} task={task} onStart={self.onStart}/>
+                                    (processed) => <TaskItem key={processed.id} processed={processed}/>
                                 )}
                                 </tbody>
                             </table>
@@ -150,84 +110,50 @@ class ListTask extends Component {
 
 // =============== item ====================
 class TaskItem extends Component {
-    defaultDatasource = {id: -1, name: ""};
 
     constructor(props) {
         super(props);
 
-        this.loadDB = this.loadDB.bind(this);
+        this.loadData = this.loadData.bind(this);
         this.state = {
-            leftDatasource: this.defaultDatasource,
-            rightDatasource: this.defaultDatasource
+            taskVo: {}
         };
     }
 
     componentWillMount() {
-        this.loadDB();
+        this.loadData();
     }
 
-    loadDB() {
+    loadData() {
         let self = this;
-        let dbIdPair = this.props.task.dataMediaSourceIdPair;
-        SELECT(getSingleDBUrl(dbIdPair.left),
+        SELECT(getSingleTaskUrl(this.props.processed.taskId),
             (json) => {
-                console.info(json);
                 self.setState({
-                    leftDatasource: json
+                    taskVo: json
                 });
             }
-        );
-
-        SELECT(getSingleDBUrl(dbIdPair.right),
-            (json) => {
-                console.info(json);
-                self.setState({
-                    rightDatasource: json
-                });
-            }
-        );
+        )
     }
-
 
     render() {
         const self = this;
-        const task = self.props.task;
-        const {leftDatasource: left, rightDatasource: right} = self.state;
-        const tableNamePair = task.tableNamePair;
+        const processed = self.props.processed;
+        const taskVo = self.state.taskVo;
 
-        return (  <tr key={task.id}>
-                <td>{task.id}</td>
-                <td>{task.taskName}</td>
-                <td style={{
-                    "wordWrap": "break-word",
-                    "tableLayout": "fixed",
-                    "wordBreak": "break-all"
-                }}>
-                    <Link className="btn btn-sm btn-outline-success" to={"/datasource/" + left.id}>
-                        {left.name}</Link>
-                    <br/>
-                    table:{tableNamePair.left}
-                </td>
-                <td>{task.directionMode === 'ONE_WAY' ? '--->' : "<--->"}[{task.directionMode}]</td>
-                <td style={{
-                    "wordWrap": "break-word",
-                    "tableLayout": "fixed",
-                    "wordBreak": "break-all"
-                }}>
-                    <Link className="btn btn-sm btn-outline-success" to={"/datasource/" + right.id}>
-                        {right.name}</Link>
-                    <br/>
-                    {tableNamePair.right}
-                </td>
-                <td>{dateFormat(task.createTime)}</td>
-                <td>{dateFormat(task.modifiedTime)}</td>
+        return (  <tr key={processed.id}>
+                <td>{processed.id}[{processed.uniqueId}]</td>
                 <td>
-                    <Link className="btn btn-sm btn-outline-primary" to={"/task/" + task.id}>
-                        <i className="fa icon-pencil"></i>update</Link>
-                    &nbsp;
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => self.props.onStart(task.id)}>
-                        <i className="fa icon-control-play"></i>start
-                    </button>
+                    <Link className="btn btn-sm btn-outline-success" to={"/task/" + processed.taskId}>
+                        {taskVo.taskName}</Link>
+                </td>
+                <td>
+                    <span className="badge badge-success">{processed.status}</span>
+                </td>
+                <td>{dateFormat(processed.createTime)}</td>
+                <td>{processed.finishTime ? dateFormat(processed.finishTime) : "未开始"}</td>
+                <td>
+                    <Link className="btn btn-sm btn-outline-primary" to={"/show/" + processed.id}>
+                        <i className="fa icon-pencil"></i>show</Link>
                 </td>
             </tr>
         )

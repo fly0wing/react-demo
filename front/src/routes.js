@@ -23,5 +23,6 @@ const routes = {
     '/task/add': 'Task Add',
     '/task/list': 'Task List',
     '/task/:id': 'Task Edit',
+    '/processed/list': 'Processed List',
 };
 export default routes;

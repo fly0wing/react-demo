@@ -1,4 +1,5 @@
 // update
+import memoize from "memoizee";
 export const UPDATE = (url, data, succ, fail) => {
     return fetch(url, {
         // credentials: 'include',
@@ -26,7 +27,7 @@ export const UPDATE = (url, data, succ, fail) => {
  * @constructor
  */
 export const CREATE = (url, data, succ, fail) => {
-    return fetch(url, {
+    fetch(url, {
         // credentials: 'include',
         method: 'POST',
         // @see https://segmentfault.com/a/1190000009637016
@@ -39,21 +40,32 @@ export const CREATE = (url, data, succ, fail) => {
             const jsonPromise = error.response.json();
             jsonPromise.then(fail || defaultErrorHandler);
         })
-        ;
+    ;
 };
 
+
 export const SELECT = (url, succ, fail) => {
+    selectCache(url, succ, fail)
+        .then(succ || logHandler)
+        .catch(fail || defaultErrorHandler)
+    ;
+};
+
+const _select = function (url, succ, fail) {
     return fetch(url, {
         // credentials: 'include',
         method: 'GET',
         // @see https://segmentfault.com/a/1190000009637016
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}
     }).then(checkStatus)
-        .then(parseJSON)
-        .then(succ || logHandler)
-        .catch(fail || defaultErrorHandler)
-        ;
+        .then(parseJSON);
 };
+const selectCache = memoize(_select, {
+    maxAge: 1000,
+    normalizer: (args) => args[0] //选择fn的第一个参数作为key
+    // promise: true, // 如果Promise.reject(),会请掉缓存
+});
+
 
 /**
  * 解析响应

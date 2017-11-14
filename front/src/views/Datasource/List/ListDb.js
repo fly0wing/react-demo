@@ -69,7 +69,7 @@ class ListDb extends Component {
                         <div className="card-block">
                             <button type="button" onClick={this.loadData}
                                     className="btn btn-sm btn-primary">
-                                <i className="fa fa-dot-circle-o"></i> 刷新
+                                <i className="fa icon-reload"></i> 刷新
                             </button>
                             <Link className="btn btn-sm btn-success" to={"/datasource/add"}>
                                 <i className="fa fa-dot-circle-o"></i> 新增</Link>
@@ -82,7 +82,6 @@ class ListDb extends Component {
                                     <th>name</th>
                                     <th>type</th>
                                     <th>url</th>
-                                    <th>Status</th>
                                     <th>操作</th>
                                 </tr>
                                 </thead>
@@ -100,11 +99,8 @@ class ListDb extends Component {
                                             {self.showDbs(db)}
                                         </td>
                                         <td>
-                                            <span className="badge badge-success">Active</span>
-                                        </td>
-                                        <td>
-                                            <Link className="btn btn-sm btn-primary" to={"/datasource/" + db.id}>
-                                                <i className="fa fa-dot-circle-o"></i>update</Link>
+                                            <Link className="btn btn-sm btn-outline-primary" to={"/datasource/" + db.id}>
+                                                <i className="fa icon-pencil"></i>update</Link>
                                         </td>
                                     </tr>
                                 )}

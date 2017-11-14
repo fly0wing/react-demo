@@ -6,7 +6,7 @@ import {getSingleDBUrl, getStartTaskUrl, TASK_URL} from "../../../common/UrlComm
 import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from "reactstrap";
 
 
-class ListTask extends Component {
+class ShowTaskProcessed extends Component {
 
     constructor(props) {
         super(props);
@@ -233,4 +233,4 @@ class TaskItem extends Component {
         )
     }
 }
-export default ListTask;
+export default ShowTaskProcessed;
